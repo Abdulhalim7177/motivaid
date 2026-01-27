@@ -21,8 +21,6 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _logoAnimationController;
   late AnimationController _loaderAnimationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
   late Animation<double> _buttonFadeAnimation;
 
   bool _showLoader = false;
@@ -47,20 +45,6 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoAnimationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoAnimationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
-      ),
-    );
 
     _buttonFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -186,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                                             'Saving Lives, One Delivery at a Time',
                                             style: AppTextStyles.subtitle1.copyWith(
                                               color: AppColors.textOnPrimary
-                                                  .withOpacity(0.95),
+                                                  .withValues(alpha: 0.95),
                                               fontSize: screenWidth * 0.04,
                                               fontWeight: FontWeight.w400,
                                             ),
@@ -237,7 +221,7 @@ class _SplashScreenState extends State<SplashScreen>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -278,7 +262,7 @@ class _SplashScreenState extends State<SplashScreen>
                   height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.textOnPrimary.withOpacity(0.1),
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.1),
                   ),
                 ),
               );
@@ -299,7 +283,7 @@ class _SplashScreenState extends State<SplashScreen>
                     gradient: SweepGradient(
                       colors: [
                         AppColors.textOnPrimary,
-                        AppColors.textOnPrimary.withOpacity(0.1),
+                        AppColors.textOnPrimary.withValues(alpha: 0.1),
                         Colors.transparent,
                         Colors.transparent,
                       ],
@@ -337,7 +321,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Icon(
                   Icons.favorite,
                   size: 24,
-                  color: AppColors.textOnPrimary.withOpacity(0.9),
+                  color: AppColors.textOnPrimary.withValues(alpha: 0.9),
                 ),
               );
             },
@@ -361,7 +345,7 @@ class _SplashScreenState extends State<SplashScreen>
               backgroundColor: AppColors.textOnPrimary,
               foregroundColor: AppColors.primaryRose,
               elevation: 4,
-              shadowColor: Colors.black.withOpacity(0.3),
+              shadowColor: Colors.black.withValues(alpha: 0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:motivaid/core/auth/widgets/auth_gate.dart';
+import 'package:motivaid/features/auth/screens/login_screen.dart';
+import 'package:motivaid/features/auth/screens/signup_screen.dart';
+import 'package:motivaid/features/home/screens/home_screen.dart';
 import 'core/theme/app_theme.dart';
-import 'features/splash/presentation/screens/splash_screen.dart';
 
 /// Main App Widget
 class MotivAidApp extends StatelessWidget {
@@ -17,10 +20,16 @@ class MotivAidApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       
-      // Splash Screen as Home
-      home: const SplashScreen(),
+      // AuthGate wrapper - routes to login or dashboard based on auth state
+      home: const AuthGate(
+        authenticatedChild: DashboardScreen(),
+      ),
       
-      // TODO: Add routing configuration when implementing navigation
+      // Routes for authentication screens
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),
+      },
     );
   }
 }
