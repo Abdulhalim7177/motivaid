@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:motivaid/core/auth/models/auth_state.dart';
+import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/features/auth/widgets/auth_button.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
@@ -21,14 +21,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Check if already authenticated and redirect
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = ref.read(authNotifierProvider);
-      if (authState is AuthStateAuthenticated) {
-        Navigator.of(context).pushReplacementNamed('/');
-      }
-    });
+    // Router handles auth redirects automatically
   }
   
   @override
@@ -50,11 +43,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         password: _passwordController.text,
       );
       
-      // Success! Navigate to home
+      // Success! Show message
       if (mounted) {
         setState(() => _isLoading = false);
-        // Force navigation to home
-        Navigator.of(context).pushReplacementNamed('/');
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Text('Login successful! Redirecting...'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        // Give user time to see the message before router redirects
+        await Future.delayed(const Duration(milliseconds: 800));
+        // Router will automatically redirect based on membership status
       }
     } catch (e) {
       // Reset loading on error
@@ -71,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _navigateToSignUp() {
-    Navigator.of(context).pushReplacementNamed('/signup');
+    context.go('/signup');
   }
 
   @override

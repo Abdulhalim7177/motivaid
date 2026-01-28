@@ -66,4 +66,20 @@ class SupabaseProfileRepository implements ProfileRepository {
       throw Exception('Failed to create profile: $e');
     }
   }
+
+  @override
+  Future<List<UserProfile>> getAllProfiles() async {
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select()
+          .order('created_at', ascending: false);
+
+      return (response as List)
+          .map((json) => UserProfile.fromJson(json))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get all profiles: $e');
+    }
+  }
 }

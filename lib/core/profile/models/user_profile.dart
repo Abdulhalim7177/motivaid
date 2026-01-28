@@ -1,4 +1,5 @@
 import 'package:motivaid/core/auth/models/auth_user.dart';
+import 'package:motivaid/core/units/models/unit_membership.dart';
 
 /// User profile model with extended information
 class UserProfile {
@@ -9,6 +10,9 @@ class UserProfile {
   final String? phone;
   final String? avatarUrl;
   final DateTime? dateOfBirth;
+  final UserRole role;
+  final String? primaryFacilityId;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -20,6 +24,9 @@ class UserProfile {
     this.phone,
     this.avatarUrl,
     this.dateOfBirth,
+    this.role = UserRole.midwife,
+    this.primaryFacilityId,
+    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -46,6 +53,11 @@ class UserProfile {
       dateOfBirth: json['date_of_birth'] != null 
           ? DateTime.parse(json['date_of_birth'] as String)
           : null,
+      role: json['role'] != null 
+          ? UserRole.fromString(json['role'] as String)
+          : UserRole.midwife,
+      primaryFacilityId: json['primary_facility_id'] as String?,
+      isActive: json['is_active'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -61,6 +73,9 @@ class UserProfile {
       'phone': phone,
       'avatar_url': avatarUrl,
       'date_of_birth': dateOfBirth?.toIso8601String(),
+      'role': role.value,
+      'primary_facility_id': primaryFacilityId,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -75,6 +90,9 @@ class UserProfile {
     String? phone,
     String? avatarUrl,
     DateTime? dateOfBirth,
+    UserRole? role,
+    String? primaryFacilityId,
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -86,6 +104,9 @@ class UserProfile {
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      role: role ?? this.role,
+      primaryFacilityId: primaryFacilityId ?? this.primaryFacilityId,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

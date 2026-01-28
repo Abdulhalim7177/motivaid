@@ -102,7 +102,7 @@ dev_dependencies:
 
 **Database Migrations**
 
-Create the following migration files in `supabase/migrations/`:
+build incrementaly when you reach each sprint Create the following migration files for the sprint you are working on in `supabase/migrations/`:
 
 1. **`20260126000001_create_facilities.sql`**
    - Create facilities table

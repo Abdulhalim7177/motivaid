@@ -38,6 +38,9 @@ dependencies:
   # Supabase for authentication and backend
   supabase_flutter: ^2.9.1
   
+  # Navigation
+  go_router: ^13.0.0
+  
   # State management
   flutter_riverpod: ^2.6.1
   

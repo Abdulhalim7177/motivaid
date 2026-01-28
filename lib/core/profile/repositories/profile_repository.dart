@@ -10,4 +10,7 @@ abstract class ProfileRepository {
 
   /// Create a new profile
   Future<UserProfile> createProfile(UserProfile profile);
+
+  /// Get all profiles (for admin/supervisor)
+  Future<List<UserProfile>> getAllProfiles();
 }

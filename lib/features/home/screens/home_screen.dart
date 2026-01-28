@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
+import 'package:motivaid/core/profile/providers/profile_provider.dart';
+import 'package:motivaid/core/units/models/unit_membership.dart';
 import 'package:motivaid/features/profile/screens/profile_view_screen.dart';
 import 'package:motivaid/features/settings/screens/settings_screen.dart';
+import 'package:motivaid/features/supervisor/screens/supervisor_approval_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -150,6 +153,58 @@ class _HomeTab extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
+            // Supervisor/Admin Section
+            ref.watch(userProfileProvider).when(
+              data: (profile) {
+                if (profile == null) return const SizedBox.shrink();
+                
+                // Show supervisor tools for supervisors and admins
+                final isSupervisor = profile.role == UserRole.supervisor || 
+                                   profile.role == UserRole.admin;
+                
+                if (!isSupervisor) return const SizedBox.shrink();
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Supervisor Tools',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.person_add, color: Colors.orange),
+                        ),
+                        title: const Text('Pending User Approvals'),
+                        subtitle: const Text('Assign new users to facilities and units'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SupervisorApprovalScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (error, stack) => const SizedBox.shrink(),
+            ),
+
             // Recent Activity Section
             Text(
               'Recent Activity',
@@ -204,10 +259,10 @@ class _HomeTab extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

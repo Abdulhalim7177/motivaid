@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
-import 'package:motivaid/core/profile/models/user_profile.dart';
 import 'package:motivaid/core/profile/providers/profile_provider.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
 import 'package:motivaid/features/auth/widgets/auth_button.dart';

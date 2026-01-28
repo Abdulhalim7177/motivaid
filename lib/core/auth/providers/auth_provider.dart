@@ -76,22 +76,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
   }) async {
     try {
-      print('🔑 AuthNotifier: Starting sign in for $email');
       state = const AuthStateLoading();
-      print('   📝 State set to: Loading');
       
       final user = await _repository.signInWithEmail(
         email: email,
         password: password,
       );
       
-      print('   ✅ Sign in successful: ${user.email}');
       state = AuthStateAuthenticated(user);
-      print('   📝 State set to: Authenticated');
     } catch (e) {
-      print('   ❌ Sign in failed: $e');
       state = AuthStateError(e.toString());
-      print('   📝 State set to: Error');
       rethrow;
     }
   }

@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:motivaid/core/auth/widgets/auth_gate.dart';
-import 'package:motivaid/features/auth/screens/login_screen.dart';
-import 'package:motivaid/features/auth/screens/signup_screen.dart';
-import 'package:motivaid/features/home/screens/home_screen.dart';
-import 'core/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motivaid/core/navigation/app_router.dart';
 
-/// Main App Widget
-class MotivAidApp extends StatelessWidget {
+class MotivAidApp extends ConsumerWidget {
   const MotivAidApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+    
+    return MaterialApp.router(
       title: 'MotivAid',
       debugShowCheckedModeBanner: false,
-      
-      // Theme Configuration
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      
-      // AuthGate wrapper - routes to login or dashboard based on auth state
-      home: const AuthGate(
-        authenticatedChild: DashboardScreen(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+        ),
       ),
-      
-      // Routes for authentication screens
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignUpScreen(),
-      },
+      routerConfig: router,
     );
   }
 }
