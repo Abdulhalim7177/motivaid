@@ -37,21 +37,22 @@ CREATE POLICY "Midwives can update assigned patients"
     USING (midwife_id = auth.uid());
 
 -- Supervisors can view all patients in their facility
--- (Refined policy using unit_memberships would go here, for now keeping it simple or skipping strict supervisor view if not needed immediately)
--- Let's allow supervisors to view if they are approved member of the facility
 CREATE POLICY "Supervisors can view facility patients"
     ON public.patients
     FOR SELECT
     USING (
         EXISTS (
-            SELECT 1 FROM public.unit_memberships
-            WHERE user_id = auth.uid()
-            AND facility_id = patients.facility_id
-            AND role IN ('supervisor', 'admin')
-            AND status = 'approved'
+            SELECT 1 FROM public.unit_memberships um
+            JOIN public.units u ON um.unit_id = u.id
+            WHERE um.profile_id = auth.uid()
+            AND u.facility_id = patients.facility_id
+            AND um.role IN ('supervisor', 'admin')
+            AND um.status = 'approved'
         )
     );
 
 -- Add updated_at trigger
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.patients
-    FOR EACH ROW EXECUTE PROCEDURE moddatetime (updated_at);
+CREATE TRIGGER update_patients_updated_at
+    BEFORE UPDATE ON public.patients
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
