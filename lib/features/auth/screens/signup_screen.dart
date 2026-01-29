@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/profile/providers/profile_provider.dart';
-import 'package:motivaid/features/auth/widgets/auth_button.dart';
+import 'package:motivaid/core/theme/app_theme.dart';
+import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -77,7 +78,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Registration successful! Awaiting supervisor assignment.'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.lowRisk,
             duration: Duration(seconds: 4),
           ),
         );
@@ -92,7 +93,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.highRisk,
           ),
         );
       }
@@ -106,6 +107,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/login');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -116,53 +130,39 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo or app name
-                  Icon(
-                    Icons.psychology,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'MotivAid',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                  // Logo
+                   Center(
+                     child: Container(
+                       width: 60,
+                       height: 60,
+                       margin: const EdgeInsets.only(bottom: 24),
+                       decoration: BoxDecoration(
+                         gradient: AppColors.primaryGradient,
+                         borderRadius: BorderRadius.circular(16),
+                       ),
+                       padding: const EdgeInsets.all(12),
+                       child: Image.asset(
+                         'assets/images/motivaid-logo.png',
+                         fit: BoxFit.contain,
+                         color: Colors.white,
+                       ),
+                     ),
+                   ),
+                   // Title
+                  const Text(
+                    'Create Account',
+                    style: AppTextStyles.heading2,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Create your account',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    'Join MotivAid to start helping mothers',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textLight,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-
-                  // Info card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.blue[700]),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'After registration, a supervisor will assign you to a facility and unit.',
-                            style: TextStyle(color: Colors.blue[900], fontSize: 13),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
 
                   // Full name field
                   AuthTextField(
@@ -182,7 +182,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   // Email field
                   AuthTextField(
                     controller: _emailController,
-                    labelText: 'Email',
+                    labelText: 'Email Address',
                     hintText: 'Enter your email',
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: Icons.email_outlined,
@@ -201,18 +201,42 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   // Phone field
                   AuthTextField(
                     controller: _phoneController,
-                    labelText: 'Phone Number (Optional)',
+                    labelText: 'Phone Number',
                     hintText: 'Enter your phone number',
                     keyboardType: TextInputType.phone,
                     prefixIcon: Icons.phone_outlined,
                   ),
                   const SizedBox(height: 16),
+                  
+                  // Role Placeholder (Visual only for now)
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Role',
+                      prefixIcon: const Icon(Icons.work_outline),
+                      filled: true,
+                      fillColor: AppColors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.divider),
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'Midwife', child: Text('Midwife')),
+                      DropdownMenuItem(value: 'Supervisor', child: Text('Supervisor')),
+                    ],
+                    onChanged: (value) {
+                       // TODO: Handle role selection
+                    },
+                    hint: const Text('Select your role'),
+                  ),
+                   const SizedBox(height: 16),
 
                   // Password field
                   AuthTextField(
                     controller: _passwordController,
                     labelText: 'Password',
-                    hintText: 'Enter your password',
+                    hintText: 'Create a password',
                     isPassword: true,
                     prefixIcon: Icons.lock_outline,
                     validator: (value) {
@@ -231,7 +255,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   AuthTextField(
                     controller: _confirmPasswordController,
                     labelText: 'Confirm Password',
-                    hintText: 'Confirm your password',
+                    hintText: 'Re-enter password',
                     isPassword: true,
                     prefixIcon: Icons.lock_outline,
                     validator: (value) {
@@ -244,15 +268,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
                   // Sign up button
-                  AuthButton(
+                  GradientButton(
                     text: 'Sign Up',
                     onPressed: _handleSignUp,
                     isLoading: _isLoading,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Login link
                   Row(
@@ -260,13 +284,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     children: [
                       Text(
                         'Already have an account? ',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: AppColors.textLight),
                       ),
                       TextButton(
                         onPressed: _navigateToLogin,
-                        child: const Text(
+                        child: Text(
                           'Log In',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColors.primaryPink,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],

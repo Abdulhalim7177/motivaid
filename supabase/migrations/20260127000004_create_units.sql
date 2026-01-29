@@ -2,7 +2,7 @@
 -- Description: Stores units/departments within facilities
 
 CREATE TABLE IF NOT EXISTS public.units (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     facility_id UUID NOT NULL REFERENCES public.facilities(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,

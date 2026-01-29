@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motivaid/core/navigation/app_router.dart';
+import 'package:motivaid/core/theme/app_theme.dart';
 
 class MotivAidApp extends ConsumerWidget {
   const MotivAidApp({super.key});
@@ -12,14 +13,7 @@ class MotivAidApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'MotivAid',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       routerConfig: router,
     );
   }

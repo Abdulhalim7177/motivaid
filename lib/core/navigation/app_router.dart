@@ -31,7 +31,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // If on splash and authenticated, redirect to appropriate page
       if (isOnSplash && isLoggedIn) {
         // Check membership status
-        final user = (authState as AuthStateAuthenticated).user;
+          final user = authState.user;
         final membershipRepo = ref.read(unitMembershipRepositoryProvider);
         final memberships = await membershipRepo.getMembershipsByProfile(user.id);
         final hasApprovedMembership = memberships.any((m) => m.isApproved);
@@ -51,7 +51,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       
       // Logged in - check membership status for protected routes
-      final user = (authState as AuthStateAuthenticated).user;
+        final user = authState.user;
       final membershipRepo = ref.read(unitMembershipRepositoryProvider);
       final memberships = await membershipRepo.getMembershipsByProfile(user.id);
       final hasApprovedMembership = memberships.any((m) => m.isApproved);

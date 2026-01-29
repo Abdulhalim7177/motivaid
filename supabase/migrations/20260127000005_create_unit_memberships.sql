@@ -8,7 +8,7 @@ CREATE TYPE public.membership_status AS ENUM ('pending', 'approved', 'rejected')
 CREATE TYPE public.user_role AS ENUM ('midwife', 'supervisor', 'admin');
 
 CREATE TABLE IF NOT EXISTS public.unit_memberships (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     profile_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     unit_id UUID NOT NULL REFERENCES public.units(id) ON DELETE CASCADE,
     role public.user_role NOT NULL DEFAULT 'midwife',

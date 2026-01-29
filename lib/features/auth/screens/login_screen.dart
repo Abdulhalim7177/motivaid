@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
-import 'package:motivaid/features/auth/widgets/auth_button.dart';
+import 'package:motivaid/core/theme/app_theme.dart';
+import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,6 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _rememberMe = false;
 
   @override
   void initState() {
@@ -57,7 +59,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Text('Login successful! Redirecting...'),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.lowRisk,
             duration: Duration(seconds: 2),
           ),
         );
@@ -73,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.highRisk,
           ),
         );
       }
@@ -87,6 +89,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/splash');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -97,27 +112,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo or app name
-                  Icon(
-                    Icons.psychology,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
+                  // Logo
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Image.asset(
+                        'assets/images/motivaid-logo.png',
+                        fit: BoxFit.contain,
+                        color: Colors.white, // Assuming logo can take tint, or remove if original colors preferred
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'MotivAid',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                  const SizedBox(height: 32),
+                  
+                  // Welcome Text
+                  const Text(
+                    'Welcome Back',
+                    style: AppTextStyles.heading2,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Welcome back!',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    'Sign in to continue',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textLight,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
@@ -125,10 +150,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Email field
                   AuthTextField(
                     controller: _emailController,
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
+                    labelText: 'Email or Phone',
+                    hintText: 'Enter your email or phone',
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: Icons.email_outlined,
+                    prefixIcon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
@@ -158,15 +183,73 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  
+                  // Remember me & Forgot Password
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: _rememberMe,
+                          onChanged: (value) {
+                            setState(() => _rememberMe = value ?? false);
+                          },
+                          activeColor: AppColors.primaryPurple,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Remember me',
+                        style: TextStyle(
+                          color: AppColors.textLight,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          // TODO: Forgot password
+                        },
+                        child: Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                            color: AppColors.primaryPink,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
 
                   // Login button
-                  AuthButton(
-                    text: 'Log In',
+                  GradientButton(
+                    text: 'Sign In',
                     onPressed: _handleLogin,
                     isLoading: _isLoading,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 4),
+                  const Center(
+                      child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('or continue with'),
+                  )),
+                  // Social Login placeholder (optional based on mockup)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSocialButton(Icons.fingerprint),
+                      const SizedBox(width: 16),
+                      _buildSocialButton(Icons.g_mobiledata),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
 
                   // Sign up link
                   Row(
@@ -174,13 +257,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text(
                         "Don't have an account? ",
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: AppColors.textLight),
                       ),
                       TextButton(
                         onPressed: _navigateToSignUp,
-                        child: const Text(
+                        child: Text(
                           'Sign Up',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColors.primaryPink,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -191,6 +277,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+  
+  Widget _buildSocialButton(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, size: 24, color: AppColors.textDark),
     );
   }
 }

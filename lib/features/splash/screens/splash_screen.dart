@@ -5,11 +5,27 @@ import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 
 /// Splash/Welcome Screen - First screen users see
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _startAnimation = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start animation after small delay
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _startAnimation = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     // Only hide buttons if truly authenticated (not loading)
     final isAuthenticated = authState is AuthStateAuthenticated;
@@ -35,9 +51,13 @@ class SplashScreen extends ConsumerWidget {
               children: [
                 const Spacer(flex: 2),
                 
-                // Logo/Icon
-                Container(
-                  padding: const EdgeInsets.all(32),
+                // Animated Logo
+                AnimatedContainer(
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.easeOutBack,
+                  width: _startAnimation ? 100 : 80,
+                  height: _startAnimation ? 100 : 80,
+                  padding: const EdgeInsets.all(20), // Reduced padding slightly
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -49,113 +69,136 @@ class SplashScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 100,
-                    color: Colors.deepPurple,
+                  child: Image.asset(
+                    'assets/images/motivaid-logo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 48),
                 
-                // App Name
-                const Text(
-                  'MotivAid',
-                  style: TextStyle(
-                    fontSize: 56,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 2,
+                // Animated App Name
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 800),
+                  opacity: _startAnimation ? 1.0 : 0.0,
+                  curve: Curves.easeIn,
+                  child: const Text(
+                    'MotivAid',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 
-                // Tagline
-                const Text(
-                  'Empowering Maternal Healthcare',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: 1,
+                // Animated Tagline
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 800),
+                  opacity: _startAnimation ? 1.0 : 0.0,
+                  child: const Text(
+                    'Empowering Maternal Healthcare',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 1,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 
-                // Description
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    'Supporting midwives in delivering quality care with E-MOTIVE protocols',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white60,
-                      height: 1.5,
+                // Animated Description with slight delay effect via AnimatedPadding
+                AnimatedPadding(
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(top: _startAnimation ? 0 : 20), // Slide up effect
+                  child: AnimatedOpacity(
+                    duration: const Duration(seconds: 1),
+                    opacity: _startAnimation ? 1.0 : 0.0,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Text(
+                        'Supporting midwives in delivering quality care with E-MOTIVE protocols',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white60,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 
                 const Spacer(flex: 3),
                 
-                // Show buttons unless truly authenticated
-                if (isAuthenticated) ...[
-                  // If authenticated, show loading indicator
-                  const SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Redirecting...',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
-                  ),
-                ] else ...[
-                  // Show buttons for unauthenticated or loading states
-                  // Get Started Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => context.go('/login'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.deepPurple,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                // Buttons / Loading Indicator
+                AnimatedOpacity(
+                  duration: const Duration(seconds: 1),
+                  opacity: _startAnimation ? 1.0 : 0.0,
+                  curve: Curves.easeIn,
+                  child: Column(
+                    children: [
+                      if (isAuthenticated) ...[
+                        const SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          ),
                         ),
-                        elevation: 4,
-                      ),
-                      child: const Text(
-                        'Get Started',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Redirecting...',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                    ),
+                      ] else ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => context.go('/login'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.deepPurple,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: const Text(
+                              'Get Started',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => context.go('/login'),
+                          child: const Text(
+                            'Already have an account? Login',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Login Link
-                  TextButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text(
-                      'Already have an account? Login',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
                 
                 const Spacer(),
               ],

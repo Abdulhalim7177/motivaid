@@ -2,7 +2,7 @@
 -- Description: Stores healthcare facilities (hospitals, clinics)
 
 CREATE TABLE IF NOT EXISTS public.facilities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     location TEXT,
     address TEXT,
