@@ -9,6 +9,7 @@ abstract class AuthRepository {
   Future<AuthUser> signUpWithEmail({
     required String email,
     required String password,
+    Map<String, dynamic>? metadata,
   });
 
   /// Sign in with email and password

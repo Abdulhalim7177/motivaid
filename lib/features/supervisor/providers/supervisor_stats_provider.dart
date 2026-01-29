@@ -9,59 +9,61 @@ class SupervisorStatsRepository {
   SupervisorStatsRepository(this._supabase);
 
   Future<int> getPendingApprovalsCount(String userId) async {
-    // 1. Get facilities where user is supervisor
+    // 1. Get units where user is supervisor
     final memberships = await _supabase
         .from('unit_memberships')
-        .select('units(facility_id)')
+        .select('unit_id')
         .eq('profile_id', userId)
         .eq('role', 'supervisor')
         .eq('status', 'approved');
         
-    final facilityIds = memberships
-        .map((e) => (e['units'] as Map<String, dynamic>)['facility_id'] as String)
-        .toSet() // Use Set to remove duplicates
+    final unitIds = memberships
+        .map((e) => e['unit_id'] as String)
+        .toSet()
         .toList();
         
-    if (facilityIds.isEmpty) return 0;
+    if (unitIds.isEmpty) return 0;
     
-    // 2. Count pending memberships in those facilities
-    // We filter by joining with units table
-    final response = await _supabase
+    // 2. Count pending memberships in those units
+    final count = await _supabase
         .from('unit_memberships')
-        .select('*, units!inner(facility_id)')
+        .count(CountOption.exact)
         .eq('status', 'pending')
-        .filter('units.facility_id', 'in', '(${facilityIds.join(',')})')
-        .count(CountOption.exact);
+        .inFilter('unit_id', unitIds);
         
-    return response.count;
+    return count;
   }
 
   Future<Map<String, int>> getFacilityOverview(String userId) async {
-    // 1. Get facilities
+    // 1. Get units and facilities where user is supervisor
     final memberships = await _supabase
         .from('unit_memberships')
-        .select('units(facility_id)')
+        .select('unit_id, units(facility_id)')
         .eq('profile_id', userId)
         .eq('role', 'supervisor')
         .eq('status', 'approved');
         
+    final unitIds = memberships
+        .map((e) => e['unit_id'] as String)
+        .toSet()
+        .toList();
+
     final facilityIds = memberships
         .map((e) => (e['units'] as Map<String, dynamic>)['facility_id'] as String)
         .toSet()
         .toList();
 
-    if (facilityIds.isEmpty) return {'midwives': 0, 'cases': 0};
+    if (unitIds.isEmpty) return {'midwives': 0, 'cases': 0};
 
-    // 2. Count midwives
-    final midWivesResponse = await _supabase
+    // 2. Count midwives in my units
+    final midWivesCount = await _supabase
         .from('unit_memberships')
-        .select('*, units!inner(facility_id)')
+        .count(CountOption.exact)
         .eq('role', 'midwife')
         .eq('status', 'approved')
-        .filter('units.facility_id', 'in', '(${facilityIds.join(',')})')
-        .count(CountOption.exact);
+        .inFilter('unit_id', unitIds);
 
-    // 3. Count active cases
+    // 3. Count active cases in my facilities
     // Patients table has facility_id directly
     final casesCount = await _supabase
         .from('patients')
@@ -70,7 +72,7 @@ class SupervisorStatsRepository {
         .eq('status', 'Active');
         
     return {
-      'midwives': midWivesResponse.count,
+      'midwives': midWivesCount,
       'cases': casesCount,
     };
   }

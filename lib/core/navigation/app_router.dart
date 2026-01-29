@@ -11,8 +11,10 @@ import 'package:motivaid/features/auth/screens/pending_approval_screen.dart';
 import 'package:motivaid/features/home/screens/home_screen.dart';
 import 'package:motivaid/features/profile/screens/profile_view_screen.dart';
 import 'package:motivaid/features/settings/screens/settings_screen.dart';
+import 'package:motivaid/features/supervisor/screens/my_facilities_screen.dart';
 import 'package:motivaid/features/supervisor/screens/supervisor_approval_screen.dart';
 import 'package:motivaid/features/splash/screens/splash_screen.dart';
+import 'package:motivaid/features/patients/screens/patients_list_screen.dart';
 
 /// Router configuration provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -119,6 +121,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'supervisor-approvals',
         builder: (context, state) => const SupervisorApprovalScreen(),
       ),
+      GoRoute(
+        path: '/supervisor/facilities',
+        name: 'supervisor-facilities',
+        builder: (context, state) => const MyFacilitiesScreen(),
+      ),
+      GoRoute(
+        path: '/patients',
+        name: 'patients',
+        builder: (context, state) => const PatientsListScreen(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -157,4 +169,3 @@ class GoRouterRefreshStream extends ChangeNotifier {
     super.dispose();
   }
 }
-

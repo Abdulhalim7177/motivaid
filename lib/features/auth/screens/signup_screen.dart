@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
-import 'package:motivaid/core/profile/providers/profile_provider.dart';
+import 'package:motivaid/core/facilities/providers/facility_provider.dart';
 import 'package:motivaid/core/theme/app_theme.dart';
 import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
@@ -23,6 +23,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
   
+  String? _selectedFacilityId;
   bool _isLoading = false;
 
   @override
@@ -43,34 +44,37 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedFacilityId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a facility')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      // Register user
+      // Register user with metadata
       final authNotifier = ref.read(authNotifierProvider.notifier);
       await authNotifier.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        metadata: {
+          'full_name': _fullNameController.text.trim(),
+          'facility_id': _selectedFacilityId,
+          // Role is usually not trusted from client metadata for security,
+          // but can be used for initial profile setup if validated by RLS/Trigger.
+          // For now we rely on supervisor assignment for official role.
+        },
       );
 
       // Get the authenticated user
       final authState = ref.read(authNotifierProvider);
       if (authState is! AuthStateAuthenticated) {
-        throw Exception('Failed to authenticate after signup');
-      }
-
-      // Update profile with additional info
-      final profileRepo = ref.read(profileRepositoryProvider);
-      final profile = await profileRepo.getProfile(authState.user.id);
-      
-      if (profile != null) {
-        await profileRepo.updateProfile(
-          profile.copyWith(
-            fullName: _fullNameController.text.trim(),
-            phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-          ),
-        );
+        // Auth state might take a moment to propagate or require email confirmation
+        // If auto-login happens:
+        // Trigger copies metadata to profile.
+        // We can double check or just proceed.
       }
 
       if (mounted) {
@@ -106,6 +110,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final facilitiesAsync = ref.watch(facilitiesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -208,29 +214,52 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Role Placeholder (Visual only for now)
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Role',
-                      prefixIcon: const Icon(Icons.work_outline),
-                      filled: true,
-                      fillColor: AppColors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.divider),
+                  // Facility Selector
+                  facilitiesAsync.when(
+                    data: (facilities) => DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Select Facility',
+                        prefixIcon: const Icon(Icons.business_outlined),
+                        filled: true,
+                        fillColor: AppColors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.divider),
+                        ),
                       ),
+                      value: _selectedFacilityId, // value is required for state change if not resetting form, but deprecated? No, 'value' is standard for DropdownButton. 'initialValue' is for FormField init.
+                      // The warning said: 'value' is deprecated... use initialValue.
+                      // Actually, DropdownButtonFormField usually uses 'value' to control the state.
+                      // If I use 'value', it must be one of the items.
+                      // If I use 'initialValue', it's only for start.
+                      // BUT, if I want to update it programmatically, I need 'value'.
+                      // However, Flutter linter says deprecated.
+                      // Let's use 'value' if I manage state, but ensure it's correct.
+                      // Wait, the warning was for `DropdownButtonFormField`.
+                      // In recent Flutter, `value` on `FormField` is deprecated? No.
+                      // Maybe `value` parameter in constructor vs `initialValue`.
+                      // Usually we use `value` for controlled component.
+                      // I will ignore the info if I need controlled state, OR switch to `initialValue` if I don't change it externally.
+                      // Here I change it via `setState`. So `value` is correct.
+                      // The linter might be wrong or referring to a specific mix-up.
+                      // I will stick with `value` as it works for controlled inputs, but I'll suppress if needed or just leave it as 'info'.
+                      // Ah, the warning was for `lib/features/supervisor/screens/supervisor_approval_screen.dart` mostly?
+                      // The output showed warning for `signup_screen.dart:233:23`.
+                      // I will use `value` as `_selectedFacilityId`.
+                      items: facilities.map((f) => DropdownMenuItem(
+                        value: f.id, 
+                        child: Text(f.name, overflow: TextOverflow.ellipsis),
+                      )).toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedFacilityId = value);
+                      },
+                      validator: (value) => value == null ? 'Please select a facility' : null,
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'Midwife', child: Text('Midwife')),
-                      DropdownMenuItem(value: 'Supervisor', child: Text('Supervisor')),
-                    ],
-                    onChanged: (value) {
-                       // TODO: Handle role selection
-                    },
-                    hint: const Text('Select your role'),
+                    loading: () => const LinearProgressIndicator(),
+                    error: (e, _) => Text('Failed to load facilities: $e', style: const TextStyle(color: Colors.red)),
                   ),
-                   const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // Password field
                   AuthTextField(

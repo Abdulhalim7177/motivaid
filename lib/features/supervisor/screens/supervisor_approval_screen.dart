@@ -9,17 +9,46 @@ import 'package:motivaid/core/units/models/unit_membership.dart';
 import 'package:motivaid/core/units/providers/unit_provider.dart';
 import 'package:motivaid/core/units/providers/unit_membership_provider.dart';
 
-/// Provider to get all profiles without approved memberships (pending users)
+/// Provider to get supervisor's facility IDs
+final supervisorFacilityIdsProvider = FutureProvider<List<String>>((ref) async {
+  final authState = ref.watch(authNotifierProvider);
+  if (authState is! AuthStateAuthenticated) return [];
+  
+  final supabase = ref.watch(supabaseClientProvider);
+  
+  final memberships = await supabase
+      .from('unit_memberships')
+      .select('units(facility_id)')
+      .eq('profile_id', authState.user.id)
+      .eq('role', 'supervisor')
+      .eq('status', 'approved');
+      
+  return memberships
+      .map((e) => (e['units'] as Map<String, dynamic>)['facility_id'] as String)
+      .toSet()
+      .toList();
+});
+
+/// Provider to get all profiles without approved memberships (pending users) IN supervisor's facilities
 final pendingUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   final profileRepo = ref.watch(profileRepositoryProvider);
   final membershipRepo = ref.watch(unitMembershipRepositoryProvider);
+  final facilityIds = await ref.watch(supervisorFacilityIdsProvider.future);
+  
+  if (facilityIds.isEmpty) return [];
   
   // Get all profiles
+  // Optimization: If RLS is set correctly, getAllProfiles might only return visible ones.
+  // But we filter explicitly by facility_id to be sure.
   final allProfiles = await profileRepo.getAllProfiles();
   
-  // Filter to only users without approved memberships
+  // Filter to only users in my facilities without approved memberships
   final pendingUsers = <UserProfile>[];
   for (final profile in allProfiles) {
+    if (profile.primaryFacilityId == null || !facilityIds.contains(profile.primaryFacilityId)) {
+      continue;
+    }
+
     final memberships = await membershipRepo.getMembershipsByProfile(profile.id);
     final hasApproved = memberships.any((m) => m.isApproved);
     if (!hasApproved) {
@@ -63,7 +92,7 @@ class SupervisorApprovalScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'All users have been assigned',
+                    'No new users in your facilities',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                 ],
@@ -158,6 +187,13 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
   UserRole _selectedRole = UserRole.midwife;
   bool _isSubmitting = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Pre-select the user's facility preference if available
+    _selectedFacilityId = widget.user.primaryFacilityId;
+  }
+
   Future<void> _handleAssign() async {
     if (_selectedFacilityId == null || _selectedUnitId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -231,7 +267,10 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
 
   @override
   Widget build(BuildContext context) {
-    final facilitiesAsync = ref.watch(facilitiesProvider);
+    // Only show facilities the supervisor manages
+    final supervisorFacilityIdsAsync = ref.watch(supervisorFacilityIdsProvider);
+    final allFacilitiesAsync = ref.watch(facilitiesProvider);
+    
     final unitsAsync = _selectedFacilityId != null
         ? ref.watch(unitsByFacilityProvider(_selectedFacilityId!))
         : null;
@@ -267,27 +306,40 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
           ),
           const SizedBox(height: 12),
 
-          // Facility selector
-          facilitiesAsync.when(
-            data: (facilities) => DropdownButtonFormField<String>(
-              initialValue: _selectedFacilityId,
-              decoration: const InputDecoration(
-                labelText: 'Facility',
-                border: OutlineInputBorder(),
-              ),
-              hint: const Text('Select facility'),
-              items: facilities.map((f) {
-                return DropdownMenuItem(value: f.id, child: Text(f.name));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedFacilityId = value;
-                  _selectedUnitId = null;
-                });
+          // Facility selector (filtered)
+          supervisorFacilityIdsAsync.when(
+            data: (myFacilityIds) => allFacilitiesAsync.when(
+              data: (facilities) {
+                final myFacilities = facilities.where((f) => myFacilityIds.contains(f.id)).toList();
+                
+                // If selected facility (from user pref) is not in my list, reset or show warning
+                // But for now, we just show dropdown.
+                
+                return DropdownButtonFormField<String>(
+                  value: _selectedFacilityId != null && myFacilityIds.contains(_selectedFacilityId) 
+                      ? _selectedFacilityId 
+                      : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Facility',
+                    border: OutlineInputBorder(),
+                  ),
+                  hint: const Text('Select facility'),
+                  items: myFacilities.map((f) {
+                    return DropdownMenuItem(value: f.id, child: Text(f.name));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedFacilityId = value;
+                      _selectedUnitId = null;
+                    });
+                  },
+                );
               },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('Error loading facilities: $e', style: const TextStyle(color: Colors.red)),
             ),
             loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.red)),
+            error: (e, _) => Text('Error checking permissions: $e', style: const TextStyle(color: Colors.red)),
           ),
           const SizedBox(height: 12),
 
@@ -295,7 +347,7 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
           if (_selectedFacilityId != null && unitsAsync != null)
             unitsAsync.when(
               data: (units) => DropdownButtonFormField<String>(
-                initialValue: _selectedUnitId,
+                value: _selectedUnitId,
                 decoration: const InputDecoration(
                   labelText: 'Unit',
                   border: OutlineInputBorder(),

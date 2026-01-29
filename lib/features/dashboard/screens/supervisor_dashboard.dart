@@ -7,6 +7,8 @@ import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/core/profile/providers/profile_provider.dart';
 import 'package:motivaid/core/profile/models/user_profile.dart';
 import 'package:motivaid/features/supervisor/providers/supervisor_stats_provider.dart';
+import 'package:motivaid/features/supervisor/providers/activity_provider.dart';
+import 'package:intl/intl.dart';
 
 /// Supervisor Dashboard Screen
 class SupervisorDashboard extends ConsumerWidget {
@@ -43,7 +45,7 @@ class SupervisorDashboard extends ConsumerWidget {
           const SizedBox(height: 16),
           
           // Facility Overview Card
-          _buildFacilityOverviewCard(ref),
+          _buildFacilityOverviewCard(context, ref),
           const SizedBox(height: 20),
           
           // Action Buttons
@@ -51,7 +53,7 @@ class SupervisorDashboard extends ConsumerWidget {
           const SizedBox(height: 24),
           
           // Recent Activity
-          _buildRecentActivity(),
+          _buildRecentActivity(ref),
         ],
       ),
     );
@@ -59,7 +61,8 @@ class SupervisorDashboard extends ConsumerWidget {
 
   Widget _buildHeader(UserProfile? profile) {
     final userName = profile?.fullName ?? 'Supervisor';
-    final facility = profile?.primaryFacilityId ?? 'City Hospital';
+    // final facility = profile?.primaryFacilityId ?? 'City Hospital';
+    // Ideally fetch facility name, but for now ID or generic is fine.
     
     return Row(
       children: [
@@ -78,16 +81,6 @@ class SupervisorDashboard extends ConsumerWidget {
                     'Supervisor',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textLight,
-                    ),
-                  ),
-                  const Text(' • ', style: TextStyle(color: AppColors.textLight)),
-                  Expanded(
-                    child: Text(
-                      facility,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textLight,
-                      ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -113,9 +106,7 @@ class SupervisorDashboard extends ConsumerWidget {
     return GradientCard(
       child: InkWell(
         onTap: () {
-            // context.go('/supervisor/approvals'); 
-            // Temporarily showing snackbar if route not ready or just go
-            context.go('/supervisor/approvals');
+            context.push('/supervisor/approvals');
         },
         borderRadius: BorderRadius.circular(20),
         child: Column(
@@ -181,54 +172,54 @@ class SupervisorDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildFacilityOverviewCard(WidgetRef ref) {
+  Widget _buildFacilityOverviewCard(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(facilityOverviewProvider);
     
     final midwives = statsAsync.value?['midwives'] ?? 0;
     final cases = statsAsync.value?['cases'] ?? 0;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.business,
-                  color: AppColors.primaryPurple,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Facility Overview',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+      child: InkWell(
+        onTap: () => context.push('/supervisor/facilities'),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.business,
+                    color: AppColors.primaryPurple,
+                    size: 20,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildOverviewItem(
-              icon: Icons.people,
-              label: 'Total Midwives',
-              value: '$midwives',
-            ),
-            const SizedBox(height: 12),
-            _buildOverviewItem(
-              icon: Icons.folder_open,
-              label: 'Active Cases',
-              value: '$cases',
-            ),
-            const SizedBox(height: 12),
-            _buildOverviewItem(
-              icon: Icons.trending_up,
-              label: 'This Month',
-              value: '156 deliveries', // Mock for now (needs events table)
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Facility Overview',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildOverviewItem(
+                icon: Icons.people,
+                label: 'Total Midwives',
+                value: '$midwives',
+              ),
+              const SizedBox(height: 12),
+              _buildOverviewItem(
+                icon: Icons.folder_open,
+                label: 'Active Cases',
+                value: '$cases',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -280,7 +271,7 @@ class SupervisorDashboard extends ConsumerWidget {
           child: GradientButton(
             text: 'Approvals',
             icon: Icons.how_to_reg,
-            onPressed: () => context.go('/supervisor/approvals'),
+            onPressed: () => context.push('/supervisor/approvals'),
           ),
         ),
         const SizedBox(width: 12),
@@ -295,23 +286,19 @@ class SupervisorDashboard extends ConsumerWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Reports - Coming soon')),
-                  );
-                },
+                onTap: () => context.push('/supervisor/facilities'),
                 borderRadius: BorderRadius.circular(12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.bar_chart,
+                      Icons.business,
                       color: AppColors.primaryPurple,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Reports',
+                      'Facilities',
                       style: AppTextStyles.button.copyWith(
                         color: AppColors.primaryPurple,
                       ),
@@ -326,7 +313,9 @@ class SupervisorDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentActivity() {
+  Widget _buildRecentActivity(WidgetRef ref) {
+    final activityAsync = ref.watch(supervisorActivityProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -336,29 +325,42 @@ class SupervisorDashboard extends ConsumerWidget {
             const Text('Recent Activity', style: AppTextStyles.heading3),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to all activity
+                 ref.invalidate(supervisorActivityProvider);
               },
-              child: const Text('View All'),
+              child: const Text('Refresh'),
             ),
           ],
         ),
         const SizedBox(height: 12),
         
-        // Activity Items (mock data)
-        // TODO: Real Activity Logs
-        _buildActivityItem(
-          icon: Icons.person_add,
-          title: 'New user: Sarah Jones',
-          subtitle: 'Pending approval',
-          time: '2h ago',
-        ),
-        const SizedBox(height: 12),
-        Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text("Real activity logs coming soon...", style: TextStyle(color: Colors.grey))
+        activityAsync.when(
+          data: (activities) {
+            if (activities.isEmpty) {
+              return const Center(child: Text('No recent activity.'));
+            }
+            return Column(
+              children: activities.map((item) => _buildActivityItem(
+                icon: item.type == 'patient' ? Icons.local_hospital : Icons.person,
+                title: item.title,
+                subtitle: item.subtitle,
+                time: _formatTime(item.timestamp),
+              )).toList(),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Text('Error loading activity: $e'),
         ),
       ],
     );
+  }
+  
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+    
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return DateFormat('MMM d').format(time);
   }
 
   Widget _buildActivityItem({
@@ -368,6 +370,7 @@ class SupervisorDashboard extends ConsumerWidget {
     required String time,
   }) {
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

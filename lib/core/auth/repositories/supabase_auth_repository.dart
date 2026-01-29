@@ -23,11 +23,13 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<AuthUser> signUpWithEmail({
     required String email,
     required String password,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: metadata,
       );
 
       if (response.user == null) {

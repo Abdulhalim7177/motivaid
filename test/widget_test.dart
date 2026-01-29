@@ -23,7 +23,11 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
-  Future<AuthUser> signUpWithEmail({required String email, required String password}) {
+  Future<AuthUser> signUpWithEmail({
+    required String email,
+    required String password,
+    Map<String, dynamic>? metadata,
+  }) {
     throw UnimplementedError();
   }
 }

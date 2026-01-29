@@ -56,12 +56,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signUpWithEmail({
     required String email,
     required String password,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       state = const AuthStateLoading();
       final user = await _repository.signUpWithEmail(
         email: email,
         password: password,
+        metadata: metadata,
       );
       state = AuthStateAuthenticated(user);
     } catch (e) {

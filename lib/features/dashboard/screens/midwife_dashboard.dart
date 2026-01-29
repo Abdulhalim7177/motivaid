@@ -8,6 +8,7 @@ import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/core/profile/providers/profile_provider.dart';
 import 'package:motivaid/core/profile/models/user_profile.dart';
 import 'package:motivaid/features/patients/providers/patient_provider.dart';
+import 'package:motivaid/core/navigation/app_router.dart';
 
 /// Midwife Dashboard Screen
 class MidwifeDashboard extends ConsumerWidget {
@@ -253,7 +254,7 @@ class MidwifeDashboard extends ConsumerWidget {
             const Text('Recent Cases', style: AppTextStyles.heading3),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to all cases
+                ref.read(routerProvider).push('/patients');
               },
               child: const Text('View All'),
             ),
