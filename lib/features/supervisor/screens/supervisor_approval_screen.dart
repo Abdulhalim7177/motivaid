@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/profile/models/user_profile.dart';
@@ -13,16 +14,16 @@ import 'package:motivaid/core/units/providers/unit_membership_provider.dart';
 final supervisorFacilityIdsProvider = FutureProvider<List<String>>((ref) async {
   final authState = ref.watch(authNotifierProvider);
   if (authState is! AuthStateAuthenticated) return [];
-  
+
   final supabase = ref.watch(supabaseClientProvider);
-  
+
   final memberships = await supabase
       .from('unit_memberships')
       .select('units(facility_id)')
       .eq('profile_id', authState.user.id)
       .eq('role', 'supervisor')
       .eq('status', 'approved');
-      
+
   return memberships
       .map((e) => (e['units'] as Map<String, dynamic>)['facility_id'] as String)
       .toSet()
@@ -34,14 +35,14 @@ final pendingUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   final profileRepo = ref.watch(profileRepositoryProvider);
   final membershipRepo = ref.watch(unitMembershipRepositoryProvider);
   final facilityIds = await ref.watch(supervisorFacilityIdsProvider.future);
-  
+
   if (facilityIds.isEmpty) return [];
-  
+
   // Get all profiles
   // Optimization: If RLS is set correctly, getAllProfiles might only return visible ones.
   // But we filter explicitly by facility_id to be sure.
   final allProfiles = await profileRepo.getAllProfiles();
-  
+
   // Filter to only users in my facilities without approved memberships
   final pendingUsers = <UserProfile>[];
   for (final profile in allProfiles) {
@@ -55,7 +56,7 @@ final pendingUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
       pendingUsers.add(profile);
     }
   }
-  
+
   return pendingUsers;
 });
 
@@ -67,62 +68,71 @@ class SupervisorApprovalScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingUsersAsync = ref.watch(pendingUsersProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pending User Approvals'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(pendingUsersProvider),
-          ),
-        ],
-      ),
-      body: pendingUsersAsync.when(
-        data: (users) {
-          if (users.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle_outline, size: 64, color: Colors.green[300]),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No pending users',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No new users in your facilities',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            );
-          }
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              return _UserCard(user: user);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Error: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(pendingUsersProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        // Navigate back to dashboard when back button is pressed
+        context.go('/dashboard');
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pending User Approvals'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => ref.invalidate(pendingUsersProvider),
+            ),
+          ],
+        ),
+        body: pendingUsersAsync.when(
+          data: (users) {
+            if (users.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle_outline, size: 64, color: Colors.green[300]),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No pending users',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No new users in your facilities',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                return _UserCard(user: user);
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text('Error: $error'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(pendingUsersProvider),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -316,7 +326,7 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
                 // But for now, we just show dropdown.
                 
                 return DropdownButtonFormField<String>(
-                  value: _selectedFacilityId != null && myFacilityIds.contains(_selectedFacilityId) 
+                  initialValue: _selectedFacilityId != null && myFacilityIds.contains(_selectedFacilityId) 
                       ? _selectedFacilityId 
                       : null,
                   decoration: const InputDecoration(
@@ -347,7 +357,7 @@ class _AssignmentFormState extends ConsumerState<_AssignmentForm> {
           if (_selectedFacilityId != null && unitsAsync != null)
             unitsAsync.when(
               data: (units) => DropdownButtonFormField<String>(
-                value: _selectedUnitId,
+                initialValue: _selectedUnitId,
                 decoration: const InputDecoration(
                   labelText: 'Unit',
                   border: OutlineInputBorder(),

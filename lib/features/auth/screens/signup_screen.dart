@@ -228,7 +228,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           borderSide: BorderSide(color: AppColors.divider),
                         ),
                       ),
-                      value: _selectedFacilityId, // value is required for state change if not resetting form, but deprecated? No, 'value' is standard for DropdownButton. 'initialValue' is for FormField init.
+                      initialValue: _selectedFacilityId, // value is required for state change if not resetting form, but deprecated? No, 'value' is standard for DropdownButton. 'initialValue' is for FormField init.
                       // The warning said: 'value' is deprecated... use initialValue.
                       // Actually, DropdownButtonFormField usually uses 'value' to control the state.
                       // If I use 'value', it must be one of the items.

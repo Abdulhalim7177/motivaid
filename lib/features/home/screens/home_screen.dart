@@ -50,7 +50,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       data: (profile) {
         if (profile == null) return const Scaffold(body: Center(child: Text('Profile not found')));
 
-        final isSupervisor = profile.role.toString().contains('supervisor') || 
+        final isSupervisor = profile.role.toString().contains('supervisor') ||
                            profile.role.toString().contains('admin');
 
         // Define tabs based on role
@@ -96,33 +96,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           canPop: false,
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
-            
+
             if (_currentIndex != 0) {
+              // Navigate to the first tab (dashboard/home)
               _onTabTapped(0);
-              return;
-            }
-            
-            // Show exit confirmation dialog
-            final shouldExit = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Exit App'),
-                content: const Text('Are you sure you want to exit?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Exit', style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ),
-            );
-            
-            if (shouldExit == true) {
-              SystemNavigator.pop();
+            } else {
+              // On the first tab, show exit confirmation dialog
+              final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Exit App'),
+                  content: const Text('Are you sure you want to exit MotivAid?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Exit', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldExit == true) {
+                // Close the app only if user confirms
+                SystemNavigator.pop();
+              }
             }
           },
           child: Scaffold(

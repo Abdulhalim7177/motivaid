@@ -76,18 +76,19 @@ final supervisorActivityProvider = FutureProvider.autoDispose<List<ActivityItem>
   // 3. Fetch Recent Membership Requests in my units
   if (unitIds.isNotEmpty) {
     // We need profile info too
+    // Using explicit relationship name due to multiple relationships between unit_memberships and profiles
     final membershipsResponse = await supabase
         .from('unit_memberships')
-        .select('id, status, created_at, updated_at, profiles(email, full_name)')
+        .select('id, status, created_at, updated_at, profiles!unit_memberships_profile_id_fkey(email, full_name)')
         .inFilter('unit_id', unitIds)
         .order('updated_at', ascending: false)
         .limit(5);
 
     for (final m in membershipsResponse as List) {
-      final profile = m['profiles'] as Map<String, dynamic>;
+      final profile = m['profiles!unit_memberships_profile_id_fkey'] as Map<String, dynamic>;
       final name = profile['full_name'] ?? profile['email'];
       final status = m['status'];
-      
+
       activities.add(ActivityItem(
         id: m['id'],
         title: 'Staff Update: $name',
