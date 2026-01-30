@@ -31,24 +31,24 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.5.0
   riverpod_annotation: ^2.3.0
-  
+
   # Navigation
   go_router: ^13.0.0
-  
+
   # Backend
   supabase_flutter: ^2.3.0
-  
+
   # Local Storage
   hive_flutter: ^1.1.0
   sqflite: ^2.3.0
-  
+
   # Utilities
   connectivity_plus: ^5.0.0
   flutter_secure_storage: ^9.0.0
   image_picker: ^1.0.7
   cached_network_image: ^3.3.0
   intl: ^0.19.0
-  
+
   # Code Generation
   freezed_annotation: ^2.4.0
   json_annotation: ^4.8.0
@@ -59,7 +59,7 @@ dev_dependencies:
   freezed: ^2.4.0
   json_serializable: ^6.7.0
   riverpod_generator: ^2.3.0
-  
+
   # Testing
   mocktail: ^1.0.0
 ```
@@ -168,59 +168,59 @@ build incrementaly when you reach each sprint Create the following migration fil
 ```dart
 // features/auth/presentation/screens/register_screen.dart
 ```
-- [ ] Registration form UI
-  - [ ] Email & password fields
-  - [ ] Full name, phone number
-  - [ ] Facility selection dropdown (fetch from Supabase)
-  - [ ] Unit selection (filtered by facility)
-  - [ ] Avatar upload (optional)
-  - [ ] Bio text area
-  - [ ] Certifications upload (PDF/image support)
-- [ ] Form validation
-- [ ] Submit registration (creates pending profile)
-- [ ] Success message with "Awaiting Approval" status
+- [x] Registration form UI
+  - [x] Email & password fields
+  - [x] Full name, phone number
+  - [x] Facility selection dropdown (fetch from Supabase)
+  - [x] Unit selection (filtered by facility)
+  - [x] Avatar upload (optional)
+  - [x] Bio text area
+  - [x] Certifications upload (PDF/image support)
+- [x] Form validation
+- [x] Submit registration (creates pending profile)
+- [x] Success message with "Awaiting Approval" status
 
 **1.2 Login Screen**
 ```dart
 // features/auth/presentation/screens/login_screen.dart
 ```
-- [ ] Email & password login
-- [ ] "Remember me" checkbox
-- [ ] Forgot password link
-- [ ] Navigate to registration
-- [ ] Handle authentication states:
-  - [ ] Pending approval (show message)
-  - [ ] Approved (navigate to dashboard)
-  - [ ] Rejected (show reason, allow re-registration)
+- [x] Email & password login
+- [x] "Remember me" checkbox
+- [x] Forgot password link
+- [x] Navigate to registration
+- [x] Handle authentication states:
+  - [x] Pending approval (show message)
+  - [x] Approved (navigate to dashboard)
+  - [x] Rejected (show reason, allow re-registration)
 
 **1.3 Profile Management**
 ```dart
 // features/profile/presentation/screens/profile_screen.dart
 ```
-- [ ] View current profile
-- [ ] Edit profile information
-- [ ] Upload/change avatar
-- [ ] Update bio and certifications
-- [ ] Request to join additional units
-- [ ] View current unit memberships
-- [ ] Logout functionality
+- [x] View current profile
+- [x] Edit profile information
+- [x] Upload/change avatar
+- [x] Update bio and certifications
+- [x] Request to join additional units
+- [x] View current unit memberships
+- [x] Logout functionality
 
 **1.4 Supervisor Approval Flow**
 ```dart
 // features/admin/presentation/screens/approval_screen.dart
 ```
-- [ ] List pending registration requests
-- [ ] View user details (profile, certifications)
-- [ ] Approve with unit assignment
-- [ ] Reject with reason
-- [ ] Send notification to user
+- [x] List pending registration requests
+- [x] View user details (profile, certifications)
+- [x] Approve with unit assignment
+- [x] Reject with reason
+- [x] Send notification to user
 
 #### Backend Work
-- [ ] Supabase Auth integration
-- [ ] Profile creation on registration
-- [ ] Approval status tracking
-- [ ] RLS policies for profiles
-- [ ] Storage bucket for avatars and certifications
+- [x] Supabase Auth integration
+- [x] Profile creation on registration
+- [x] Approval status tracking
+- [x] RLS policies for profiles
+- [x] Storage bucket for avatars and certifications
 
 #### Deliverables
 - ✅ Working registration and login
@@ -244,61 +244,61 @@ build incrementaly when you reach each sprint Create the following migration fil
 ```dart
 // core/navigation/app_router.dart (using go_router)
 ```
-- [ ] Role-based routing
-- [ ] Bottom navigation for midwives
-- [ ] Drawer navigation for supervisors
-- [ ] Unit selector widget (dropdown)
-- [ ] Protected routes with auth guard
+- [x] Role-based routing
+- [x] Bottom navigation for midwives
+- [x] Drawer navigation for supervisors
+- [x] Unit selector widget (dropdown)
+- [x] Protected routes with auth guard
 
 **2.2 Midwife Dashboard**
 ```dart
 // features/dashboard/presentation/screens/midwife_dashboard_screen.dart
 ```
-- [ ] Welcome header with user info
-- [ ] Facility and active unit display
-- [ ] Unit selector dropdown
-- [ ] Quick action cards:
-  - [ ] Clinical Mode
-  - [ ] Training Mode
-- [ ] Recent cases widget (last 5)
-- [ ] My units section
-- [ ] Sync status indicator
-- [ ] Profile quick access
+- [x] Welcome header with user info
+- [x] Facility and active unit display
+- [x] Unit selector dropdown
+- [x] Quick action cards:
+  - [x] Clinical Mode
+  - [x] Training Mode
+- [x] Recent cases widget (last 5)
+- [x] My units section
+- [x] Sync status indicator
+- [x] Profile quick access
 
 **2.3 Supervisor Dashboard**
 ```dart
 // features/dashboard/presentation/screens/supervisor_dashboard_screen.dart
 ```
-- [ ] Welcome header with supervisor role
-- [ ] Unit selector dropdown (multi-unit support)
-- [ ] Unit metrics cards:
-  - [ ] Active cases count
-  - [ ] Total cases this week
-  - [ ] E-MOTIVE adherence percentage
-  - [ ] Average response time
-  - [ ] Team member count
-- [ ] Pending approvals badge and list
-- [ ] Quick navigation buttons:
-  - [ ] Cases
-  - [ ] Team
-  - [ ] Stats
-  - [ ] Units
-- [ ] All managed units list with metrics
+- [x] Welcome header with supervisor role
+- [x] Unit selector dropdown (multi-unit support)
+- [x] Unit metrics cards:
+  - [x] Active cases count
+  - [x] Total cases this week
+  - [x] E-MOTIVE adherence percentage
+  - [x] Average response time
+  - [x] Team member count
+- [x] Pending approvals badge and list
+- [x] Quick navigation buttons:
+  - [x] Cases
+  - [x] Team
+  - [x] Stats
+  - [x] Units
+- [x] All managed units list with metrics
 
 **2.4 Unit Selection System**
 ```dart
 // shared/widgets/unit_selector.dart
 ```
-- [ ] Dropdown showing user's units
-- [ ] Current unit highlighting
-- [ ] Switch unit functionality
-- [ ] Update global state on selection
-- [ ] Persist selection locally
+- [x] Dropdown showing user's units
+- [x] Current unit highlighting
+- [x] Switch unit functionality
+- [x] Update global state on selection
+- [x] Persist selection locally
 
 #### State Management
-- [ ] Auth provider (current user, role)
-- [ ] Unit provider (current unit, user's units)
-- [ ] Dashboard providers (metrics, cases)
+- [x] Auth provider (current user, role)
+- [x] Unit provider (current unit, user's units)
+- [x] Dashboard providers (metrics, cases)
 
 #### Deliverables
 - ✅ Complete navigation system
@@ -321,43 +321,43 @@ build incrementaly when you reach each sprint Create the following migration fil
 ```dart
 // features/units/presentation/screens/unit_management_screen.dart
 ```
-- [ ] List all managed units
-- [ ] Create new unit
-  - [ ] Unit name input
-  - [ ] Facility association
-  - [ ] Metadata (location, capacity, specialization)
-- [ ] Edit unit details
-  - [ ] Rename unit
-  - [ ] Update metadata
-- [ ] View unit statistics
+- [x] List all managed units
+- [x] Create new unit
+  - [x] Unit name input
+  - [x] Facility association
+  - [x] Metadata (location, capacity, specialization)
+- [x] Edit unit details
+  - [x] Rename unit
+  - [x] Update metadata
+- [x] View unit statistics
 
 **3.2 Team Management (Supervisor)**
 ```dart
 // features/units/presentation/screens/team_management_screen.dart
 ```
-- [ ] List all team members in unit
-- [ ] Filter by role (midwife, supervisor)
-- [ ] View member profiles
-- [ ] Add existing users to unit
-- [ ] Remove users from unit
-- [ ] Pending membership requests
+- [x] List all team members in unit
+- [x] Filter by role (midwife, supervisor)
+- [x] View member profiles
+- [x] Add existing users to unit
+- [x] Remove users from unit
+- [x] Pending membership requests
 
 **3.3 Emergency Contacts Management**
 ```dart
 // features/units/presentation/screens/emergency_contacts_screen.dart
 ```
-- [ ] List unit emergency contacts
-- [ ] Add new contact (name, role, phone)
-- [ ] Edit contact details
-- [ ] Delete contact
-- [ ] Set contact priority/order
-- [ ] View facility-level contacts (read-only for supervisors)
+- [x] List unit emergency contacts
+- [x] Add new contact (name, role, phone)
+- [x] Edit contact details
+- [x] Delete contact
+- [x] Set contact priority/order
+- [x] View facility-level contacts (read-only for supervisors)
 
 #### Backend Work
-- [ ] Units CRUD API
-- [ ] Unit memberships API
-- [ ] Emergency contacts API
-- [ ] RLS policies for supervisor access
+- [x] Units CRUD API
+- [x] Unit memberships API
+- [x] Emergency contacts API
+- [x] RLS policies for supervisor access
 
 #### Deliverables
 - ✅ Unit creation and management
@@ -1189,24 +1189,24 @@ Future<void> initSupabase() async {
 ### Manual Testing Checklist
 
 **Sprint 1: Authentication**
-- [ ] Self-register as new midwife
-- [ ] Verify pending status message
-- [ ] Login as supervisor, approve registration
-- [ ] Login as midwife again, verify access granted
-- [ ] Upload avatar and certifications
-- [ ] Edit profile information
+- [x] Self-register as new midwife
+- [x] Verify pending status message
+- [x] Login as supervisor, approve registration
+- [x] Login as midwife again, verify access granted
+- [x] Upload avatar and certifications
+- [x] Edit profile information
 
 **Sprint 2: Dashboards**
-- [ ] Login as midwife, verify dashboard displays correctly
-- [ ] Select different unit from dropdown
-- [ ] Login as supervisor, verify multi-unit dropdown works
-- [ ] Check unit metrics display correctly
+- [x] Login as midwife, verify dashboard displays correctly
+- [x] Select different unit from dropdown
+- [x] Login as supervisor, verify multi-unit dropdown works
+- [x] Check unit metrics display correctly
 
 **Sprint 3: Unit Management**
-- [ ] Supervisor creates new unit
-- [ ] Supervisor renames unit
-- [ ] Supervisor adds midwife to unit
-- [ ] Verify unit metadata saves correctly
+- [x] Supervisor creates new unit
+- [x] Supervisor renames unit
+- [x] Supervisor adds midwife to unit
+- [x] Verify unit metadata saves correctly
 
 **Sprint 4-5: Clinical Mode**
 - [ ] Complete risk assessment for a patient
@@ -1348,7 +1348,7 @@ flutter test integration_test/
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** 2026-01-26  
-**Status:** Ready for Implementation  
+**Document Version:** 2.0
+**Last Updated:** 2026-01-26
+**Status:** Ready for Implementation
 **Estimated Completion:** 16 weeks from start date

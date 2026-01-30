@@ -332,7 +332,7 @@ class SupervisorDashboard extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        
+
         activityAsync.when(
           data: (activities) {
             if (activities.isEmpty) {
@@ -340,7 +340,7 @@ class SupervisorDashboard extends ConsumerWidget {
             }
             return Column(
               children: activities.map((item) => _buildActivityItem(
-                icon: item.type == 'patient' ? Icons.local_hospital : Icons.person,
+                icon: _getActivityIcon(item.type),
                 title: item.title,
                 subtitle: item.subtitle,
                 time: _formatTime(item.timestamp),
@@ -352,6 +352,19 @@ class SupervisorDashboard extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'pending_user':
+        return Icons.hourglass_empty;
+      case 'approved_user':
+        return Icons.check_circle;
+      case 'new_patient':
+        return Icons.local_hospital;
+      default:
+        return Icons.info;
+    }
   }
   
   String _formatTime(DateTime time) {

@@ -15,6 +15,9 @@ import 'package:motivaid/features/supervisor/screens/my_facilities_screen.dart';
 import 'package:motivaid/features/supervisor/screens/supervisor_approval_screen.dart';
 import 'package:motivaid/features/splash/screens/splash_screen.dart';
 import 'package:motivaid/features/patients/screens/patients_list_screen.dart';
+import 'package:motivaid/features/patients/screens/add_patient_screen.dart';
+import 'package:motivaid/features/patients/screens/patient_detail_screen.dart';
+import 'package:motivaid/features/patients/screens/edit_patient_screen.dart';
 
 /// Router configuration provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -130,6 +133,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/patients',
         name: 'patients',
         builder: (context, state) => const PatientsListScreen(),
+        routes: [
+          GoRoute(
+            path: 'add',
+            name: 'add-patient',
+            builder: (context, state) => const AddPatientScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            name: 'patient-detail',
+            builder: (context, state) {
+              final patientId = state.pathParameters['id']!;
+              return PatientDetailScreen(patientId: patientId);
+            },
+            routes: [
+              GoRoute(
+                path: 'edit',
+                name: 'edit-patient',
+                builder: (context, state) {
+                  final patientId = state.pathParameters['id']!;
+                  return EditPatientScreen(patientId: patientId);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

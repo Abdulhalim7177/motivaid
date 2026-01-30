@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/widgets/risk_badge.dart';
@@ -36,8 +37,51 @@ final recentPatientsProvider = FutureProvider.autoDispose<List<Patient>>((ref) a
   if (user == null) return [];
   
   final repository = ref.watch(patientRepositoryProvider);
-  // Get all patients for this midwife
   final patients = await repository.getPatients(midwifeId: user.id);
-  // Take top 5 recent
   return patients.take(5).toList();
 });
+
+final allPatientsProvider = FutureProvider.autoDispose<List<Patient>>((ref) async {
+  final authState = ref.watch(authNotifierProvider);
+  final user = authState is AuthStateAuthenticated ? authState.user : null;
+  if (user == null) return [];
+  
+  final repository = ref.watch(patientRepositoryProvider);
+  return repository.getPatients(midwifeId: user.id);
+});
+
+final patientDetailProvider = FutureProvider.autoDispose.family<Patient?, String>((ref, patientId) async {
+  final repository = ref.watch(patientRepositoryProvider);
+  return repository.getPatient(patientId);
+});
+
+final patientNotifierProvider = Provider<PatientNotifier>((ref) {
+  final repository = ref.watch(patientRepositoryProvider);
+  return PatientNotifier(repository);
+});
+
+class PatientNotifier extends StateNotifier<AsyncValue<void>> {
+  final PatientRepository _repository;
+  
+  PatientNotifier(this._repository) : super(const AsyncValue.data(null));
+  
+  Future<Patient> createPatient(Patient patient) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.createPatient(patient);
+    state = const AsyncValue.data(null);
+    return result;
+  }
+  
+  Future<Patient> updatePatient(Patient patient) async {
+    state = const AsyncValue.loading();
+    final result = await _repository.updatePatient(patient);
+    state = const AsyncValue.data(null);
+    return result;
+  }
+  
+  Future<void> deletePatient(String id) async {
+    state = const AsyncValue.loading();
+    await _repository.deletePatient(id);
+    state = const AsyncValue.data(null);
+  }
+}
