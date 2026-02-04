@@ -1,0 +1,16 @@
+-- Add detailed risk factors to patients table
+ALTER TABLE public.patients
+ADD COLUMN IF NOT EXISTS gravida INTEGER,
+ADD COLUMN IF NOT EXISTS parity INTEGER,
+ADD COLUMN IF NOT EXISTS prior_pph_history BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS history_cesarean_section BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS has_antenatal_care BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS placental_status TEXT CHECK (placental_status IN ('Normal', 'Previa', 'Accreta', 'Abruption', 'Unknown')),
+ADD COLUMN IF NOT EXISTS estimated_fetal_weight DECIMAL,
+ADD COLUMN IF NOT EXISTS number_of_fetuses INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS baseline_hemoglobin DECIMAL,
+ADD COLUMN IF NOT EXISTS known_coagulopathy BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS has_fibroids BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS has_polyhydramnios BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS labor_induced BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS prolonged_labor BOOLEAN DEFAULT FALSE;

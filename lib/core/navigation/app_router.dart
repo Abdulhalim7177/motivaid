@@ -40,12 +40,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       // If on splash and authenticated, redirect to appropriate page
       if (isOnSplash && isLoggedIn) {
         // Check membership status
+        try {
           final user = authState.user;
-        final membershipRepo = ref.read(unitMembershipRepositoryProvider);
-        final memberships = await membershipRepo.getMembershipsByProfile(user.id);
-        final hasApprovedMembership = memberships.any((m) => m.isApproved);
-        
-        return hasApprovedMembership ? '/dashboard' : '/pending';
+          final membershipRepo = ref.read(unitMembershipRepositoryProvider);
+          final memberships = await membershipRepo.getMembershipsByProfile(user.id);
+          final hasApprovedMembership = memberships.any((m) => m.isApproved);
+          
+          return hasApprovedMembership ? '/dashboard' : '/pending';
+        } catch (e) {
+          // If check fails (e.g. offline), default to dashboard
+          // This ensures offline users aren't stuck on splash
+          return '/dashboard';
+        }
       }
       
       // Allow splash for unauthenticated users
@@ -60,15 +66,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       
       // Logged in - check membership status for protected routes
+      try {
         final user = authState.user;
-      final membershipRepo = ref.read(unitMembershipRepositoryProvider);
-      final memberships = await membershipRepo.getMembershipsByProfile(user.id);
-      final hasApprovedMembership = memberships.any((m) => m.isApproved);
-      
-      // If no approved membership, show pending screen
-      if (!hasApprovedMembership) {
-        if (currentPath == '/pending') return null;
-        return '/pending';
+        final membershipRepo = ref.read(unitMembershipRepositoryProvider);
+        final memberships = await membershipRepo.getMembershipsByProfile(user.id);
+        final hasApprovedMembership = memberships.any((m) => m.isApproved);
+        
+        // If no approved membership, show pending screen
+        if (!hasApprovedMembership) {
+          if (currentPath == '/pending') return null;
+          return '/pending';
+        }
+      } catch (e) {
+        // Offline or error: Assume approved (or check local cache if we had one)
+        // Default to allowing access so offline users aren't blocked
       }
       
       // Logged in with approved membership - redirect to dashboard if on auth screens

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
+import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/theme/app_theme.dart';
 import 'package:motivaid/core/widgets/gradient_button.dart';
 import 'package:motivaid/features/auth/widgets/auth_text_field.dart';
@@ -19,11 +20,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = false;
+  bool _canCheckBiometrics = false;
 
   @override
   void initState() {
     super.initState();
-    // Router handles auth redirects automatically
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final biometricService = ref.read(biometricAuthServiceProvider);
+    final canCheck = await biometricService.isDeviceSupported();
+    if (mounted) {
+      setState(() => _canCheckBiometrics = canCheck);
+    }
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      final biometricService = ref.read(biometricAuthServiceProvider);
+      
+      await authNotifier.loginWithBiometrics(biometricService);
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+        // If state is authenticated, router will redirect.
+        // If error, it's in the state, but we might want to show snackbar
+        final authState = ref.read(authNotifierProvider);
+        if (authState is AuthStateError) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(authState.message), backgroundColor: AppColors.highRisk),
+          );
+        } else if (authState is AuthStateAuthenticated) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Biometric login successful!'), backgroundColor: AppColors.lowRisk),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Biometric auth failed: $e'), backgroundColor: AppColors.highRisk),
+        );
+      }
+    }
   }
   
   @override
@@ -233,21 +276,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: _handleLogin,
                     isLoading: _isLoading,
                   ),
-                  const SizedBox(height: 4),
-                  const Center(
-                      child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('or continue with'),
-                  )),
-                  // Social Login placeholder (optional based on mockup)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSocialButton(Icons.fingerprint),
-                      const SizedBox(width: 16),
-                      _buildSocialButton(Icons.g_mobiledata),
-                    ],
-                  ),
+                  // Social Login
+                  if (_canCheckBiometrics) ...[
+                    const SizedBox(height: 4),
+                    const Center(
+                        child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('or continue with'),
+                    )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSocialButton(
+                          icon: Icons.fingerprint, 
+                          onTap: _handleBiometricLogin,
+                          label: 'Biometrics',
+                        ),
+                      ],
+                    ),
+                  ],
                   
                   const SizedBox(height: 24),
 
@@ -280,14 +327,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
   
-  Widget _buildSocialButton(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.divider),
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildSocialButton({required IconData icon, required VoidCallback onTap, String? label}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.divider),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 24, color: AppColors.textDark),
+            if (label != null) ...[
+              const SizedBox(width: 8),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+            ],
+          ],
+        ),
       ),
-      child: Icon(icon, size: 24, color: AppColors.textDark),
     );
   }
 }

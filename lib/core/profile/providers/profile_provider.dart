@@ -3,11 +3,18 @@ import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/profile/models/user_profile.dart';
 import 'package:motivaid/core/profile/repositories/profile_repository.dart';
 import 'package:motivaid/core/profile/repositories/supabase_profile_repository.dart';
+import 'package:motivaid/core/profile/repositories/offline_profile_repository.dart';
+import 'package:motivaid/core/data/local/database_helper.dart';
+import 'package:motivaid/core/network/network_info.dart';
 
 /// Provider for the profile repository
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  return SupabaseProfileRepository(supabase);
+  final remoteRepo = SupabaseProfileRepository(supabase);
+  final localDb = DatabaseHelper.instance;
+  final networkInfo = NetworkInfoImpl();
+  
+  return OfflineProfileRepository(remoteRepo, localDb, networkInfo);
 });
 
 /// Provider for fetching a user's profile

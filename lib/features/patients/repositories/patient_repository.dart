@@ -46,6 +46,13 @@ class SupabasePatientRepository implements PatientRepository {
   @override
   Future<Patient> createPatient(Patient patient) async {
     final Map<String, dynamic> data = patient.toJson();
+    if (data['id'] == '') {
+      data.remove('id');
+    }
+    // Also remove timestamps to let DB handle defaults if preferred, but they are optional
+    // data.remove('created_at'); 
+    // data.remove('updated_at');
+    
     final response = await _supabase.from('patients').insert(data).select().single();
     return Patient.fromJson(response);
   }

@@ -1,14 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:motivaid/core/auth/models/auth_state.dart';
 import 'package:motivaid/core/auth/providers/auth_provider.dart';
 import 'package:motivaid/core/widgets/risk_badge.dart';
 import 'package:motivaid/features/patients/models/patient.dart';
 import 'package:motivaid/features/patients/repositories/patient_repository.dart';
+import 'package:motivaid/features/patients/repositories/offline_patient_repository.dart';
+import 'package:motivaid/core/data/local/database_helper.dart';
+import 'package:motivaid/core/data/sync/sync_queue_repository.dart';
+import 'package:motivaid/core/network/network_info.dart';
 
 final patientRepositoryProvider = Provider<PatientRepository>((ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  return SupabasePatientRepository(supabase);
+  final remoteRepo = SupabasePatientRepository(supabase);
+  final localDb = DatabaseHelper.instance;
+  final syncQueue = SyncQueueRepository();
+  final networkInfo = NetworkInfoImpl();
+  
+  return OfflinePatientRepository(remoteRepo, localDb, syncQueue, networkInfo);
 });
 
 // Stats Providers for Dashboard
